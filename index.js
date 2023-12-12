@@ -27,6 +27,9 @@ async function run() {
 
     const reportCollection = client.db('reportDB').collection('reports')
     const safetyCollection = client.db('reportDB').collection('safety')
+    const contactCollection = client.db('reportDB').collection('contact')
+
+    //Report Api Section
 
     app.post('/reports', async(req, res) => {
         const data = req.body;
@@ -39,6 +42,8 @@ async function run() {
         res.send(result)
     })
 
+    //Safety Api Section
+
     app.get('/safety', async(req, res) => {
         const result = await safetyCollection.find().toArray()
         res.send(result)
@@ -48,6 +53,18 @@ async function run() {
     //     const id = req.params.id;
     //     console.log(id)
     // })
+
+    //Contact Section
+    app.post('/contact', async(req, res) => {
+      const data = req.body;
+      const result = await contactCollection.insertOne(data);
+      res.send(result)
+    })
+
+    app.get('/contact', async(req, res) => {
+      const result = await contactCollection.find().toArray()
+      res.send(result)
+    })
 
 
 
