@@ -29,6 +29,7 @@ async function run() {
     const safetyCollection = client.db("reportDB").collection("safety");
     const contactCollection = client.db("reportDB").collection("contact");
     const userCollection = client.db("reportDB").collection("users");
+    const postCollection = client.db("reportDB").collection("posts");
 
     //jwt token related api
     app.post("/jwt", async (req, res) => {
@@ -41,11 +42,12 @@ async function run() {
 
     //Verify Token
     const verifyToken = (req, res, next) => {
-      // console.log('inside verify token', req.headers.authorization);
+      console.log('inside verify token', req.headers.authorization);
       if(!req.headers.authorization){
         return res.status(401).send({message: 'unauthorize acess'})
       }
       const token = req.headers.authorization.split(' ')[1];
+      // console.log(token);
       if(!token){
         return  res.status(401).send({message: 'unauthorize acess'})
       }
@@ -70,6 +72,30 @@ async function run() {
       next();
     }
 
+    //posts related api
+    app.post('/posts', async(req, res) => {
+      const data = req.body;
+      const result = await postCollection.insertOne(data);
+      res.send(result);
+    })
+
+    app.get("/posts", async (req, res) => {
+      const result = await postCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/posts/like/:id",verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          like: like++ ,
+        },
+      };
+      const result = await reportCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     //Report Api Section
 
     app.post("/reports", async (req, res) => {
@@ -89,6 +115,32 @@ async function run() {
       const result = await reportCollection.deleteOne(query);
       res.send(result);
     });
+
+    app.patch("/reports/confirmed/:id",verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          confirmed: "investigating",
+        },
+      };
+      const result = await reportCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/reports/solved/:id",verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          confirmed: "solved",
+        },
+      };
+      const result = await reportCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    
 
     //Safety Api Section
 
