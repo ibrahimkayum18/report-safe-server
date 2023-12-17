@@ -30,6 +30,7 @@ async function run() {
     const contactCollection = client.db("reportDB").collection("contact");
     const userCollection = client.db("reportDB").collection("users");
     const postCollection = client.db("reportDB").collection("posts");
+    const reviewCollection = client.db("reportDB").collection("reviews");
 
     //jwt token related api
     app.post("/jwt", async (req, res) => {
@@ -210,6 +211,29 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
+
+    //Review section api
+    app.post('/reviews', async(req, res) => {
+      const data = req.body;
+      const result = await reviewCollection.insertOne(data);
+      res.send(result);
+    })
+
+    app.get('/reviews', async(req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.delete("/reviews/:id",verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await reviewCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+
+
 
     await client.db("admin").command({ ping: 1 });
     console.log(
